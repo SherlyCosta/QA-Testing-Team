@@ -1,0 +1,23 @@
+{
+  "name": "qa-testing-team",
+  "version": "1.0.0",
+  "description": "This repository is created to learn how automated tests are connected to CI/CD, how builds are set up and run, how test results are generated, and how to identify and troubleshoot common pipeline failures.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SherlyCosta/QA-Testing-Team.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SherlyCosta/QA-Testing-Team/issues"
+  },
+  "homepage": "https://github.com/SherlyCosta/QA-Testing-Team#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0"
+  }
+}
