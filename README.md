@@ -6,9 +6,9 @@ Setup
 1. Clone the repository
 git clone https://github.com/SherlyCosta/QA-Testing-Team.git
 cd QA-Testing-Team
-2. Install dependencies
+3. Install dependencies
 npm install
-3. Install Playwright browsers
+4. Install Playwright browsers
 npx playwright install
 
 
