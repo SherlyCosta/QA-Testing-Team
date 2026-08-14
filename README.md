@@ -5,7 +5,6 @@ This repository is created to learn how automated tests are connected to CI/CD, 
 Setup
 1. Clone the repository
 git clone https://github.com/SherlyCosta/QA-Testing-Team.git
-
 cd QA-Testing-Team
 3. Install dependencies
 npm install
