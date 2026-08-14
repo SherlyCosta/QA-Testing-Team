@@ -5,6 +5,7 @@ This repository is created to learn how automated tests are connected to CI/CD, 
 Setup
 1. Clone the repository
 git clone https://github.com/SherlyCosta/QA-Testing-Team.git
+
 cd QA-Testing-Team
 3. Install dependencies
 npm install
@@ -21,13 +22,18 @@ npx playwright test
 Run tests on a specific browser:
 
 npx playwright test --project=chromium
+
 npx playwright test --project=firefox
+
 npx playwright test --project=webkit
+
 View Test Report
+
 npx playwright show-report
 
 
 Current Project Structure
+
 QA-Testing-Team/
 ├── tests/
 │   └── example.spec.ts
@@ -36,6 +42,8 @@ QA-Testing-Team/
 ├── package-lock.json
 ├── playwright.config.ts
 └── README.md
+
+
 Current Status
 
 The initial Playwright TypeScript framework has been set up. Application-specific test suites and Jenkins integration will be added as the project progresses.
