@@ -23,8 +23,17 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat 'npm test'
+                withCredentials([
+                        usernamePassword(
+                        credentialsId: 'playwright-test-user',
+                        usernameVariable: 'TEST_USER_EMAIL',
+                        passwordVariable: 'TEST_USER_PASSWORD'
+                    )
+                ]) {
+                    bat 'npm test'
+                 }
             }
+
         }
     }
 }
