@@ -1,7 +1,8 @@
 {
-  "name": "qa-testing-team",
+  "name": "restful-booker-platform-demo",
   "version": "1.0.0",
-  "description": "This repository is created to learn how automated tests are connected to CI/CD, how builds are set up and run, how test results are generated, and how to identify and troubleshoot common pipeline failures.",
+  "description": "Playwright automation tests for the Restful Booker Platform Demo.",
+  "main": "index.js",
   "scripts": {
     "test": "playwright test",
     "test:auth": "playwright test tests/auth",
