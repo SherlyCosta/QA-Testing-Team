@@ -21,19 +21,41 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+         stage('Run Tests') {
             steps {
                 withCredentials([
-                        usernamePassword(
+                    usernamePassword(
                         credentialsId: 'playwright-test-user',
                         usernameVariable: 'TEST_USER_EMAIL',
                         passwordVariable: 'TEST_USER_PASSWORD'
                     )
                 ]) {
-                    bat 'npm test'
-                 }
-            }
+                    script {
 
+                        def testCommand
+
+                        if (params.TEST_SUITE == 'All') {
+                            testCommand = 'npx playwright test'
+                        } else if (params.TEST_SUITE == 'Auth') {
+                            testCommand = 'npm run test:auth'
+                        } else if (params.TEST_SUITE == 'Product') {
+                            testCommand = 'npm run test:product'
+                        } else if (params.TEST_SUITE == 'Cart') {
+                            testCommand = 'npm run test:cart'
+                        }
+
+                        if (params.BROWSER == 'All') {
+                            bat testCommand
+                        } else if (params.BROWSER == 'Chromium') {
+                            bat "${testCommand} --project=chromium"
+                        } else if (params.BROWSER == 'Firefox') {
+                            bat "${testCommand} --project=firefox"
+                        } else if (params.BROWSER == 'WebKit') {
+                            bat "${testCommand} --project=webkit"
+                        }
+                    }
+                }
+            }
         }
     }
     post {
