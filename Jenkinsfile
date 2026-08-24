@@ -42,6 +42,8 @@ pipeline {
                             testCommand = 'npm run test:product'
                         } else if (params.TEST_SUITE == 'Cart') {
                             testCommand = 'npm run test:cart'
+                        } else if (params.TEST_SUITE == 'Happy_Path_E2E') {
+                            testCommand = 'npm run test tests/happy-path-e2e.spec.ts'
                         }
 
                         if (params.BROWSER == 'All') {
