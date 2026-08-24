@@ -1,0 +1,17 @@
+{
+  "name": "playwright-dashboard-reporter",
+  "version": "1.0.0",
+  "description": "Custom Playwright Dashboard Reporter",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && copy reporter-template.html dist\\reporter-template.html"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
