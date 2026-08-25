@@ -69,7 +69,7 @@ pipeline {
     }
    post {
     always {
-        archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**', 'playwright-custom-report/test-report.pdf', allowEmptyArchive: true
+        archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**, playwright-custom-report/test-report.pdf', allowEmptyArchive: true
 
         publishHTML([
             allowMissing: true,
