@@ -59,11 +59,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Generate PDF Report') {
+            steps {
+                bat 'npx tsx scripts/generate-pdf.ts'
+            }
+        }
+        
     }
    post {
     always {
         archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**',
-            allowEmptyArchive: true
+        archiveArtifacts artifacts: 'playwright-custom-report/test-report.pdf',
+        allowEmptyArchive: true
 
         publishHTML([
             allowMissing: true,
