@@ -7,7 +7,8 @@
     "test": "playwright test",
     "test:auth": "playwright test tests/auth",
     "test:product": "playwright test tests/product",
-    "test:cart": "playwright test tests/cart"
+    "test:cart": "playwright test tests/cart",
+    "posttest": "npx tsx scripts/generate-pdf.ts"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,8 @@
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",
     "dotenv": "^17.4.2",
-    "typescript": "^7.0.2",
-    "playwright-dashboard-reporter": "file:./playwright-dashboard-reporter"
+    "pdf-lib": "^1.17.1",
+    "playwright-dashboard-reporter": "file:./playwright-dashboard-reporter",
+    "typescript": "^7.0.2"
   }
 }
