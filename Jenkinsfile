@@ -60,9 +60,10 @@ pipeline {
             }
         }
     }
-    post {
+   post {
     always {
-        archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
+        archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**',
+            allowEmptyArchive: true
 
         publishHTML([
             allowMissing: true,
@@ -71,6 +72,15 @@ pipeline {
             reportDir: 'playwright-report',
             reportFiles: 'index.html',
             reportName: 'Playwright HTML Report'
+        ])
+
+        publishHTML([
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'playwright-custom-report',
+            reportFiles: 'dashboard.html',
+            reportName: 'Custom Dashboard Report'
         ])
     }
   }
