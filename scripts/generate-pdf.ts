@@ -26,28 +26,39 @@ async function generatePdf() {
     const mergedPdf = await PDFDocument.create();
 
     const expandSuitesAndCapture = async (): Promise<Buffer> => {
-        // Find all test suite header bars that display .spec.ts or .setup.ts
-        const suiteHeaders = page.locator('div, h3, h4').filter({
-            hasText: /\.(spec|setup)\.ts/i
+        // Expand suites directly via browser DOM execution
+        await page.evaluate(() => {
+            // Find all elements displaying .ts filenames
+            const allElements = Array.from(document.querySelectorAll('*'));
+            const suiteHeaders = allElements.filter(el => {
+                const text = el.textContent || '';
+                const hasFilename = text.includes('.spec.ts') || text.includes('.setup.ts');
+                // Ensure we get the specific clickable row (not the entire body/page)
+                const isDirectHeader = el.children.length <= 6 && (el.classList.toString().includes('suite') || el.classList.toString().includes('header') || el.tagName === 'DIV');
+                return hasFilename && isDirectHeader;
+            });
+
+            // Trigger a single direct DOM click on each distinct suite container/header
+            suiteHeaders.forEach(header => {
+                (header as HTMLElement).click();
+            });
+
+            // Force show any test detail containers that might be hidden by CSS
+            document.querySelectorAll('[style*="display: none"], .test-items, .suite-content, .suite-body').forEach(el => {
+                const htmlEl = el as HTMLElement;
+                if (!htmlEl.classList.contains('modal')) {
+                    htmlEl.style.display = 'block';
+                    htmlEl.style.visibility = 'visible';
+                    htmlEl.style.maxHeight = 'none';
+                    htmlEl.style.height = 'auto';
+                }
+            });
         });
 
-        const count = await suiteHeaders.count();
+        // Wait for dynamic DOM expansion to settle
+        await page.waitForTimeout(1000);
 
-        for (let s = 0; s < count; s++) {
-            const header = suiteHeaders.nth(s);
-
-            if (await header.isVisible().catch(() => false)) {
-                // Ensure we click the topmost wrapper for that specific test suite bar
-                await header.scrollIntoViewIfNeeded().catch(() => { });
-                await header.click({ position: { x: 20, y: 15 } }).catch(() => { });
-                await page.waitForTimeout(200);
-            }
-        }
-
-        // Wait for all accordions and dynamic test lists to render completely
-        await page.waitForTimeout(800);
-
-        // Calculate dynamic height for the full page capture
+        // Calculate dynamic height of the fully expanded content
         const fullHeight = await page.evaluate(() => {
             const body = document.body;
             const html = document.documentElement;
@@ -62,7 +73,7 @@ async function generatePdf() {
 
         return await page.pdf({
             width: '1440px',
-            height: `${fullHeight + 50}px`,
+            height: `${fullHeight + 60}px`,
             printBackground: true,
             preferCSSPageSize: false,
             margin: {
