@@ -25,6 +25,7 @@ export default defineConfig({
     ['list'],
     ['html'],
     ['playwright-dashboard-reporter'],
+    ['./playwright-dashboard-reporter/index.ts'],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
