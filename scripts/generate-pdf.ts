@@ -26,19 +26,46 @@ async function generatePdf() {
     const mergedPdf = await PDFDocument.create();
 
     const expandSuitesAndCapture = async (): Promise<Buffer> => {
-        // Target all clickable suite items (such as the rows containing .ts filenames or chevron arrows)
-        const suiteHeaders = page.locator('.suite-item, .suite-header, .suite-row, [onclick*="toggleSuite"], [onclick*="toggle"], div:has-text(".spec.ts"), div:has-text(".setup.ts")');
-        const suiteCount = await suiteHeaders.count();
+        // Target top-level parent containers for each suite card/row
+        const suiteCards = page.locator('.suite-item, .suite-card, .suite-row, [data-testid="suite-item"]');
+        let suiteCount = await suiteCards.count();
 
-        for (let s = 0; s < suiteCount; s++) {
-            const suiteEl = suiteHeaders.nth(s);
-            if (await suiteEl.isVisible().catch(() => false)) {
-                await suiteEl.click().catch(() => { });
-                await page.waitForTimeout(100);
+        // Fallback: If no wrappers match the card selector, target clickable headers directly
+        if (suiteCount === 0) {
+            const suiteHeaders = page.locator('.suite-header, [onclick*="toggleSuite"], [onclick*="toggle"], div:has-text(".spec.ts"), div:has-text(".setup.ts")');
+            const fallbackCount = await suiteHeaders.count();
+
+            for (let s = 0; s < fallbackCount; s++) {
+                const header = suiteHeaders.nth(s);
+                if (await header.isVisible().catch(() => false)) {
+                    await header.click().catch(() => { });
+                    await page.waitForTimeout(100);
+                }
+            }
+        } else {
+            for (let s = 0; s < suiteCount; s++) {
+                const suite = suiteCards.nth(s);
+
+                if (!(await suite.isVisible().catch(() => false))) continue;
+
+                // Locate the clickable toggle and the expandable content inside THIS specific suite
+                const trigger = suite.locator('.suite-header, [onclick*="toggle"], button, svg, .chevron').first();
+                const testContent = suite.locator('.suite-body, .test-list, .test-case, .test-item, .suite-tests, ul, ol').first();
+
+                // Check if content is already visible
+                const isContentVisible = await testContent.isVisible().catch(() => false);
+
+                // Click only if the inner tests are hidden
+                if (!isContentVisible && (await trigger.isVisible().catch(() => false))) {
+                    await trigger.click().catch(() => { });
+                    // Wait until the tests inside appear
+                    await testContent.waitFor({ state: 'visible', timeout: 1200 }).catch(() => { });
+                    await page.waitForTimeout(50);
+                }
             }
         }
 
-        // Wait briefly for expand transitions to complete
+        // Wait briefly for expand transitions and animations to complete
         await page.waitForTimeout(600);
 
         // Calculate dynamic height of the fully expanded content
