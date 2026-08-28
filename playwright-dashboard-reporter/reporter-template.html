@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root, html[data-theme="dark"] {
+        :root,
+        html[data-theme="dark"] {
             --bg-color: #0d1117;
             --card-bg: #161b22;
             --border-color: #30363d;
@@ -69,13 +73,16 @@
             width: 7px;
             height: 7px;
         }
+
         ::-webkit-scrollbar-track {
             background: transparent;
         }
+
         ::-webkit-scrollbar-thumb {
             background: var(--border-color);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: var(--text-muted);
         }
@@ -250,11 +257,25 @@
             box-shadow: var(--hover-shadow);
         }
 
-        .card-pass { border-top: 3px solid var(--pass-color); }
-        .card-fail { border-top: 3px solid var(--fail-color); }
-        .card-skip { border-top: 3px solid var(--skip-color); }
-        .card-duration { border-top: 3px solid var(--highlight); }
-        .card-rate { border-top: 3px solid #a371f7; }
+        .card-pass {
+            border-top: 3px solid var(--pass-color);
+        }
+
+        .card-fail {
+            border-top: 3px solid var(--fail-color);
+        }
+
+        .card-skip {
+            border-top: 3px solid var(--skip-color);
+        }
+
+        .card-duration {
+            border-top: 3px solid var(--highlight);
+        }
+
+        .card-rate {
+            border-top: 3px solid #a371f7;
+        }
 
         .card h2 {
             margin: 0 0 6px 0;
@@ -267,11 +288,25 @@
             gap: 10px;
         }
 
-        .card-pass h2 { color: var(--pass-color); }
-        .card-fail h2 { color: var(--fail-color); }
-        .card-skip h2 { color: var(--skip-color); }
-        .card-duration h2 { color: var(--highlight); }
-        .card-rate h2 { color: #a371f7; }
+        .card-pass h2 {
+            color: var(--pass-color);
+        }
+
+        .card-fail h2 {
+            color: var(--fail-color);
+        }
+
+        .card-skip h2 {
+            color: var(--skip-color);
+        }
+
+        .card-duration h2 {
+            color: var(--highlight);
+        }
+
+        .card-rate h2 {
+            color: #a371f7;
+        }
 
         .card p {
             margin: 0;
@@ -375,9 +410,17 @@
             margin-left: 2px;
         }
 
-        .pass-color { background-color: var(--pass-color); }
-        .fail-color { background-color: var(--fail-color); }
-        .skip-color { background-color: var(--skip-color); }
+        .pass-color {
+            background-color: var(--pass-color);
+        }
+
+        .fail-color {
+            background-color: var(--fail-color);
+        }
+
+        .skip-color {
+            background-color: var(--skip-color);
+        }
 
         .suites-container {
             background-color: var(--card-bg);
@@ -408,7 +451,7 @@
             cursor: pointer;
             transition: background-color 0.18s ease;
         }
-        
+
         .suite-row:last-child {
             border-bottom: none;
         }
@@ -451,16 +494,24 @@
             font-size: 0.88rem;
             font-weight: 500;
         }
-        
+
         .stat-badge {
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        
-        .stat-passed { color: var(--pass-color); }
-        .stat-failed { color: var(--fail-color); }
-        .stat-skipped { color: var(--skip-color); }
+
+        .stat-passed {
+            color: var(--pass-color);
+        }
+
+        .stat-failed {
+            color: var(--fail-color);
+        }
+
+        .stat-skipped {
+            color: var(--skip-color);
+        }
 
         /* Failed Tests Section */
         .failed-tests-container {
@@ -668,7 +719,7 @@
             box-sizing: border-box;
             overflow: hidden;
         }
-        
+
         .error-screenshot img {
             max-width: 100%;
             height: auto;
@@ -685,7 +736,8 @@
             font-weight: 600;
         }
 
-        .error-section p, .error-section pre {
+        .error-section p,
+        .error-section pre {
             margin: 0;
             font-size: 0.85rem;
             color: var(--text-main);
@@ -725,9 +777,14 @@
             gap: 10px;
             color: var(--highlight);
         }
-        
-        .footer-card-header.browser { color: var(--pass-color); }
-        .footer-card-header.logs { color: var(--text-main); }
+
+        .footer-card-header.browser {
+            color: var(--pass-color);
+        }
+
+        .footer-card-header.logs {
+            color: var(--text-main);
+        }
 
         .info-grid {
             display: grid;
@@ -736,9 +793,16 @@
             font-size: 0.85rem;
         }
 
-        .info-label { color: var(--text-muted); font-weight: 500; }
-        .info-value { color: var(--text-main); font-family: var(--mono-font); }
-        
+        .info-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--text-main);
+            font-family: var(--mono-font);
+        }
+
         .browser-info {
             display: flex;
             align-items: center;
@@ -769,7 +833,9 @@
             opacity: 0.7;
         }
 
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         /* Responsive Layout Adjustments */
         @media (max-width: 1100px) {
@@ -778,6 +844,7 @@
                 align-items: center;
                 text-align: center;
             }
+
             .legend-container {
                 flex-direction: row;
                 justify-content: center;
@@ -789,28 +856,36 @@
         }
 
         @media (max-width: 900px) {
-            body { padding: 16px; }
+            body {
+                padding: 16px;
+            }
+
             .charts-row {
                 grid-template-columns: 1fr;
             }
+
             .failed-content {
                 flex-direction: column;
             }
+
             .failed-sidebar {
                 width: 100%;
                 max-height: 250px;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
             }
+
             .summary-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
+
             .footer-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
 
     <div class="dashboard-wrapper">
@@ -828,7 +903,8 @@
                     <i class="fa-solid fa-moon" id="theme-icon" style="color: #a371f7;"></i>
                     <span id="theme-text">Dark Mode</span>
                 </button>
-                <button class="btn" onclick="window.print()"><i class="fa-solid fa-download"></i> Download Report</button>
+                <button class="btn" onclick="window.print()"><i class="fa-solid fa-download"></i> Download
+                    Report</button>
             </div>
         </div>
 
@@ -891,7 +967,9 @@
                 </div>
             </div>
             <div class="chart-container">
-                <div class="chart-header">Execution Trend <span style="color:var(--text-muted); font-size: 0.85rem; font-weight:normal">(Last 10 Runs)</span></div>
+                <div class="chart-header">Execution Trend <span
+                        style="color:var(--text-muted); font-size: 0.85rem; font-weight:normal">(Last 10 Runs)</span>
+                </div>
                 <div class="chart-canvas-wrapper" style="height: 220px;">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -934,7 +1012,7 @@
             <div class="footer-card">
                 <div class="footer-card-header browser"><i class="fa-solid fa-globe"></i> Browser</div>
                 <div class="browser-info" id="browser-info">
-                     <!-- Populated by JS -->
+                    <!-- Populated by JS -->
                 </div>
             </div>
             <div class="footer-card">
@@ -1070,7 +1148,7 @@
 
             const tabsListContainer = document.getElementById('browser-tabs-list');
             tabsListContainer.innerHTML = '';
-            
+
             projects.forEach((proj, idx) => {
                 const btn = document.createElement('button');
                 btn.className = `browser-tab-btn ${idx === 0 ? 'active' : ''}`;
@@ -1152,7 +1230,7 @@
 
             // Line Trend Chart setup
             const filledTrend = [...(data.trend || [0])];
-            while(filledTrend.length < 10) filledTrend.unshift(null);
+            while (filledTrend.length < 10) filledTrend.unshift(null);
 
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
             const textColor = currentTheme === 'light' ? '#656d76' : '#8b949e';
@@ -1162,7 +1240,7 @@
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
                 data: {
-                    labels: Array.from({length: 10}, (_, i) => `Run ${i+1}`),
+                    labels: Array.from({ length: 10 }, (_, i) => `Run ${i + 1}`),
                     datasets: [{
                         label: 'Pass Rate (%)',
                         data: filledTrend,
@@ -1217,8 +1295,8 @@
                         testsHtml = `<div class="suite-tests" id="suite-tests-${sIdx}" style="display: none; padding: 12px 20px; background: var(--subrow-bg); border-top: 1px solid var(--border-color);">`;
                         suite.tests.forEach(test => {
                             let icon = test.status === 'passed' ? '<i class="fa-regular fa-circle-check" style="color:var(--pass-color)"></i>' :
-                                       test.status === 'failed' ? '<i class="fa-regular fa-circle-xmark" style="color:var(--fail-color)"></i>' :
-                                       '<i class="fa-regular fa-circle-minus" style="color:var(--skip-color)"></i>';
+                                test.status === 'failed' ? '<i class="fa-regular fa-circle-xmark" style="color:var(--fail-color)"></i>' :
+                                    '<i class="fa-regular fa-circle-minus" style="color:var(--skip-color)"></i>';
                             testsHtml += `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
                                     <div style="display: flex; align-items: center; gap: 8px;">${icon} <span style="font-size: 0.88rem;">${test.title}</span></div>
@@ -1245,6 +1323,16 @@
                 });
             }
 
+            function escapeHtml(str) {
+                if (!str || typeof str !== 'string') return str || '';
+                return str
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
             function renderFailedTests(failedToRender) {
                 const failedSection = document.getElementById('failed-section');
                 const listEl = document.getElementById('failed-list');
@@ -1262,21 +1350,21 @@
                 document.getElementById('failed-count-title').textContent = failedToRender.length;
 
                 const renderDetails = (test) => {
-                    let screenshotHtml = test.screenshot 
-                        ? `<img src="${test.screenshot}" alt="Error screenshot" />` 
+                    let screenshotHtml = test.screenshot
+                        ? `<img src="${test.screenshot}" alt="Error screenshot" />`
                         : `<div class="empty-state"><i class="fa-regular fa-image"></i><div>No screenshot captured for this test</div></div>`;
-                    
+
                     detailsEl.innerHTML = `
                         <div class="failed-details-header-wrapper">
                             <div class="failed-details-header">
                                 <div class="failed-details-title">
-                                    <span>${test.name}</span>
+                                    <span>${escapeHtml(test.name)}</span>
                                     <span class="badge-fail">Failed</span>
                                 </div>
-                                <div class="failed-details-duration"><i class="fa-regular fa-clock"></i> ${test.duration}</div>
+                                <div class="failed-details-duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(test.duration)}</div>
                             </div>
                             <div class="failed-details-filepath">
-                                <i class="fa-regular fa-file-code"></i> <span>${test.file}</span>
+                                <i class="fa-regular fa-file-code"></i> <span>${escapeHtml(test.file)}</span>
                             </div>
                         </div>
                         <div class="tabs">
@@ -1293,12 +1381,12 @@
                         </div>
                         <div id="content-error" class="tab-content" style="display: none;">
                             <div class="error-section">
-                                <pre>${test.error || 'No error message available'}</pre>
+                                <pre>${escapeHtml(test.error || 'No error message available')}</pre>
                             </div>
                         </div>
                         <div id="content-stacktrace" class="tab-content" style="display: none;">
                             <div class="error-section">
-                                <pre style="border-color: var(--border-color); color: var(--text-main);">${test.stackTrace || 'No stack trace available'}</pre>
+                                <pre style="border-color: var(--border-color); color: var(--text-main);">${escapeHtml(test.stackTrace || 'No stack trace available')}</pre>
                             </div>
                         </div>
                     `;
@@ -1307,7 +1395,7 @@
                         tab.onclick = () => {
                             detailsEl.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                             detailsEl.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-                            
+
                             tab.classList.add('active');
                             document.getElementById(tab.getAttribute('data-target')).style.display = 'block';
                         };
@@ -1318,8 +1406,8 @@
                     const item = document.createElement('div');
                     item.className = `failed-item ${idx === 0 ? 'active' : ''}`;
                     item.innerHTML = `
-                        <div class="failed-item-title">${test.name}</div>
-                        <div class="failed-item-file">${test.file}</div>
+                        <div class="failed-item-title">${escapeHtml(test.name)}</div>
+                        <div class="failed-item-file">${escapeHtml(test.file)}</div>
                         <div class="failed-item-status"><i class="fa-regular fa-circle-xmark"></i> Failed</div>
                     `;
                     item.onclick = () => {
@@ -1329,7 +1417,7 @@
                     };
                     listEl.appendChild(item);
                 });
-                
+
                 if (failedToRender.length > 0) renderDetails(failedToRender[0]);
             }
 
@@ -1349,8 +1437,8 @@
             }
 
             const now = new Date();
-            const timeStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + 
-                            now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const timeStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             document.getElementById('report-time').innerHTML = `<i class="fa-regular fa-calendar"></i> ${timeStr}`;
             document.getElementById('bottom-time').textContent = `Report generated on ${timeStr}`;
 
@@ -1380,4 +1468,5 @@
         });
     </script>
 </body>
+
 </html>

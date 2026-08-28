@@ -1,255 +1,10 @@
-// import type {
-//   FullConfig,
-//   FullResult,
-//   Reporter,
-//   Suite,
-//   TestCase,
-//   TestResult,
-//   TestError
-// } from '@playwright/test/reporter';
-// import * as fs from 'fs';
-// import * as path from 'path';
-
-// interface CustomReporterOptions {
-//   projectName?: string;
-//   outputDir?: string;
-// }
-
-// function getProjectLabel(name: string): string {
-//   if (!name) return 'Default';
-//   const l = name.toLowerCase();
-//   if (l === 'chromium' || l.includes('chrome')) return 'Chrome';
-//   if (l === 'firefox') return 'Firefox';
-//   if (l === 'webkit' || l.includes('safari')) return 'WebKit';
-//   if (l === 'setup') return 'Setup';
-//   return name.replace(/\b\w/g, c => c.toUpperCase());
-// }
-
-// class CustomDashboardReporter implements Reporter {
-//   private suitesMap: Map<string, any> = new Map();
-//   private failedTestsData: any[] = [];
-//   private executedProjects: Map<string, { id: string, name: string }> = new Map();
-//   private browserConfigs: Map<string, { name: string, headless: string, viewport: string }> = new Map();
-//   private stats = {
-//     passed: 0,
-//     failed: 0,
-//     skipped: 0,
-//     startTime: 0,
-//   };
-//   private outputDir = 'playwright-custom-report';
-//   private projectName = 'Playwright Tests';
-//   private browserInfo = { name: 'Unknown', headless: 'Unknown', viewport: 'Unknown' };
-
-//   constructor(options?: CustomReporterOptions) {
-//     if (options?.outputDir) {
-//       this.outputDir = options.outputDir;
-//     }
-//     if (options?.projectName) {
-//       this.projectName = options.projectName;
-//     }
-//   }
-
-//   onBegin(config: FullConfig, suite: Suite) {
-//     this.stats.startTime = Date.now();
-//     console.log(`Starting the run with ${suite.allTests().length} tests`);
-
-//     if (config.projects && config.projects.length > 0) {
-//       const p = config.projects[0];
-//       this.browserInfo.name = p.use?.browserName || p.use?.defaultBrowserType || p.name || 'Unknown';
-//       this.browserInfo.headless = p.use?.headless !== false ? 'true' : 'false';
-//       this.browserInfo.viewport = p.use?.viewport ? `${p.use.viewport.width}x${p.use.viewport.height}` : 'Unknown';
-
-//       for (const proj of config.projects) {
-//         const bName = proj.use?.browserName || proj.use?.defaultBrowserType || proj.name || 'Unknown';
-//         const headless = proj.use?.headless !== false ? 'true' : 'false';
-//         const viewport = proj.use?.viewport ? `${proj.use.viewport.width}x${proj.use.viewport.height}` : 'Unknown';
-//         this.browserConfigs.set(proj.name, {
-//           name: bName,
-//           headless,
-//           viewport
-//         });
-//       }
-//     }
-//   }
-
-//   onTestEnd(test: TestCase, result: TestResult) {
-//     const rawProjectName = test.parent?.project()?.name || 'default';
-//     const projectLabel = getProjectLabel(rawProjectName);
-
-//     if (!this.executedProjects.has(rawProjectName)) {
-//       this.executedProjects.set(rawProjectName, {
-//         id: rawProjectName,
-//         name: projectLabel
-//       });
-//     }
-
-//     const suiteName = path.basename(test.location.file);
-//     const suiteKey = `${rawProjectName}:${suiteName}`;
-
-//     if (!this.suitesMap.has(suiteKey)) {
-//       this.suitesMap.set(suiteKey, {
-//         name: suiteName,
-//         file: test.location.file,
-//         project: rawProjectName,
-//         projectLabel: projectLabel,
-//         passed: 0,
-//         failed: 0,
-//         skipped: 0,
-//         tests: []
-//       });
-//     }
-//     const suiteData = this.suitesMap.get(suiteKey);
-
-//     let prevScreenshot = '';
-//     // Handle retries: remove previous attempt stats and records if this is a retry
-//     const existingIndex = suiteData.tests.findIndex((t: any) => t.id === test.id);
-//     if (existingIndex >= 0) {
-//       const prevTest = suiteData.tests[existingIndex];
-//       if (prevTest.status === 'passed') {
-//         this.stats.passed--; suiteData.passed--;
-//       } else if (prevTest.status === 'failed' || prevTest.status === 'timedOut') {
-//         this.stats.failed--; suiteData.failed--;
-//         const prevFailed = this.failedTestsData.find(f => f.id === test.id);
-//         if (prevFailed && prevFailed.screenshot) {
-//           prevScreenshot = prevFailed.screenshot;
-//         }
-//         this.failedTestsData = this.failedTestsData.filter(f => f.id !== test.id);
-//       } else if (prevTest.status === 'skipped') {
-//         this.stats.skipped--; suiteData.skipped--;
-//       }
-//       suiteData.tests.splice(existingIndex, 1);
-//     }
-
-//     suiteData.tests.push({
-//       id: test.id,
-//       title: test.title,
-//       status: result.status,
-//       duration: `${(result.duration / 1000).toFixed(1)}s`,
-//       durationMs: result.duration,
-//       project: rawProjectName,
-//       projectLabel: projectLabel
-//     });
-
-//     if (result.status === 'passed') {
-//       this.stats.passed++;
-//       suiteData.passed++;
-//     } else if (result.status === 'failed' || result.status === 'timedOut') {
-//       this.stats.failed++;
-//       suiteData.failed++;
-      
-//       // Collect failure details
-//       const screenshot = result.attachments.find(a => a.name === 'screenshot' || (a.contentType && a.contentType.includes('image')));
-//       let screenshotBase64 = '';
-//       if (screenshot && screenshot.path && fs.existsSync(screenshot.path)) {
-//         const ext = path.extname(screenshot.path).replace('.', '');
-//         const b64 = fs.readFileSync(screenshot.path, 'base64');
-//         screenshotBase64 = `data:image/${ext || 'png'};base64,${b64}`;
-//       } else if (screenshot && screenshot.body) {
-//         screenshotBase64 = `data:image/png;base64,${screenshot.body.toString('base64')}`;
-//       }
-
-//       let errorMsg = 'Unknown error';
-//       let stackTrace = '';
-//       if (result.error) {
-//          errorMsg = result.error.message || result.error.value || 'Error';
-//          stackTrace = result.error.stack || '';
-//       } else if (result.errors && result.errors.length > 0) {
-//          errorMsg = result.errors.map(e => e.message).join('\n\n');
-//          stackTrace = result.errors.map(e => e.stack).join('\n\n');
-//       }
-
-//       this.failedTestsData.push({
-//         id: test.id,
-//         name: test.title,
-//         file: `${test.location.file}:${test.location.line}`,
-//         status: 'failed',
-//         duration: `${(result.duration / 1000).toFixed(1)}s`,
-//         error: errorMsg,
-//         stackTrace: stackTrace,
-//         screenshot: screenshotBase64 || prevScreenshot,
-//         project: rawProjectName,
-//         projectLabel: projectLabel
-//       });
-
-//     } else if (result.status === 'skipped') {
-//       this.stats.skipped++;
-//       suiteData.skipped++;
-//     }
-//   }
-
-//   async onEnd(result: FullResult) {
-//     const totalDurationMs = Date.now() - this.stats.startTime;
-//     const totalDurationStr = `${Math.floor(totalDurationMs / 60000)}m ${Math.floor((totalDurationMs % 60000) / 1000)}s`;
-//     const total = this.stats.passed + this.stats.failed + this.stats.skipped;
-//     const passRate = total > 0 ? Math.round((this.stats.passed / total) * 100) : 0;
-
-//     if (!fs.existsSync(this.outputDir)) {
-//       fs.mkdirSync(this.outputDir, { recursive: true });
-//     }
-
-//     // Load or initialize history
-//     const historyFile = path.join(this.outputDir, 'run-history.json');
-//     let history: number[] = [];
-//     if (fs.existsSync(historyFile)) {
-//       try {
-//         history = JSON.parse(fs.readFileSync(historyFile, 'utf-8'));
-//       } catch (e) { }
-//     }
-//     history.push(passRate);
-//     if (history.length > 10) history = history.slice(history.length - 10);
-//     fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
-
-//     const reportData = {
-//       summary: {
-//         passed: this.stats.passed,
-//         failed: this.stats.failed,
-//         skipped: this.stats.skipped,
-//         totalDuration: totalDurationStr,
-//         passRate: `${passRate}%`
-//       },
-//       projects: Array.from(this.executedProjects.values()),
-//       browserConfigs: Object.fromEntries(this.browserConfigs.entries()),
-//       trend: history,
-//       suites: Array.from(this.suitesMap.values()),
-//       failedTests: this.failedTestsData,
-//       environment: {
-//         os: process.platform,
-//         node: process.version,
-//         playwright: require('@playwright/test/package.json').version || 'Unknown',
-//         project: this.projectName
-//       },
-//       browser: this.browserInfo,
-//       logs: []
-//     };
-
-//     const templatePath = path.join(__dirname, 'reporter-template.html');
-//     let htmlContent = fs.readFileSync(templatePath, 'utf-8');
-    
-//     // Inject the data
-//     const dataScript = `<script id="report-data">window.__REPORT_DATA__ = ${JSON.stringify(reportData)};</script>`;
-//     if (htmlContent.includes('<script id="report-data">')) {
-//       htmlContent = htmlContent.replace(/<script id="report-data">[\s\S]*?<\/script>/, dataScript);
-//     } else {
-//       htmlContent = htmlContent.replace('</body>', `${dataScript}\n</body>`);
-//     }
-
-//     const outPath = path.join(this.outputDir, 'dashboard.html');
-//     fs.writeFileSync(outPath, htmlContent);
-//     console.log(`Custom Dashboard Report generated at: ${outPath}`);
-//   }
-// }
-
-// export default CustomDashboardReporter;
-
-
 import type {
   FullConfig,
   FullResult,
   Reporter,
   Suite,
   TestCase,
-  TestResult,
-  TestError
+  TestResult
 } from '@playwright/test/reporter';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -271,6 +26,10 @@ function getProjectLabel(name: string): string {
   return name.replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function stripAnsi(str: string): string {
+  return str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+}
+
 class CustomDashboardReporter implements Reporter {
   private suitesMap: Map<string, any> = new Map();
   private failedTestsData: any[] = [];
@@ -279,7 +38,7 @@ class CustomDashboardReporter implements Reporter {
   private stats = {
     passed: 0,
     failed: 0,
-    skipped: 0,
+    flaky: 0,
     startTime: 0,
   };
   private outputDir = 'playwright-custom-report';
@@ -287,17 +46,12 @@ class CustomDashboardReporter implements Reporter {
   private browserInfo = { name: 'Unknown', headless: 'Unknown', viewport: 'Unknown' };
 
   constructor(options?: CustomReporterOptions) {
-    if (options?.outputDir) {
-      this.outputDir = options.outputDir;
-    }
-    if (options?.projectName) {
-      this.projectName = options.projectName;
-    }
+    if (options?.outputDir) this.outputDir = options.outputDir;
+    if (options?.projectName) this.projectName = options.projectName;
   }
 
   onBegin(config: FullConfig, suite: Suite) {
     this.stats.startTime = Date.now();
-    console.log(`Starting the run with ${suite.allTests().length} tests`);
 
     if (config.projects && config.projects.length > 0) {
       const p = config.projects[0];
@@ -306,13 +60,10 @@ class CustomDashboardReporter implements Reporter {
       this.browserInfo.viewport = p.use?.viewport ? `${p.use.viewport.width}x${p.use.viewport.height}` : 'Unknown';
 
       for (const proj of config.projects) {
-        const bName = proj.use?.browserName || proj.use?.defaultBrowserType || proj.name || 'Unknown';
-        const headless = proj.use?.headless !== false ? 'true' : 'false';
-        const viewport = proj.use?.viewport ? `${proj.use.viewport.width}x${proj.use.viewport.height}` : 'Unknown';
         this.browserConfigs.set(proj.name, {
-          name: bName,
-          headless,
-          viewport
+          name: proj.use?.browserName || proj.use?.defaultBrowserType || proj.name || 'Unknown',
+          headless: proj.use?.headless !== false ? 'true' : 'false',
+          viewport: proj.use?.viewport ? `${proj.use.viewport.width}x${proj.use.viewport.height}` : 'Unknown'
         });
       }
     }
@@ -323,10 +74,7 @@ class CustomDashboardReporter implements Reporter {
     const projectLabel = getProjectLabel(rawProjectName);
 
     if (!this.executedProjects.has(rawProjectName)) {
-      this.executedProjects.set(rawProjectName, {
-        id: rawProjectName,
-        name: projectLabel
-      });
+      this.executedProjects.set(rawProjectName, { id: rawProjectName, name: projectLabel });
     }
 
     const suiteName = path.basename(test.location.file);
@@ -340,91 +88,164 @@ class CustomDashboardReporter implements Reporter {
         projectLabel: projectLabel,
         passed: 0,
         failed: 0,
-        skipped: 0,
+        flaky: 0,
         tests: []
       });
     }
     const suiteData = this.suitesMap.get(suiteKey);
 
-    let prevScreenshot = '';
+    // Determine exact status considering retries & flakiness
+    const outcome = test.outcome();
+    let finalStatus: 'passed' | 'failed' | 'flaky' = 'passed';
+
+    if (outcome === 'flaky') {
+      finalStatus = 'flaky';
+    } else if (outcome === 'unexpected' || result.status === 'failed' || result.status === 'timedOut') {
+      finalStatus = 'failed';
+    }
+
+    // Clean previous retry attempts from stats
     const existingIndex = suiteData.tests.findIndex((t: any) => t.id === test.id);
     if (existingIndex >= 0) {
-      const prevTest = suiteData.tests[existingIndex];
-      if (prevTest.status === 'passed') {
-        this.stats.passed--; suiteData.passed--;
-      } else if (prevTest.status === 'failed' || prevTest.status === 'timedOut') {
-        this.stats.failed--; suiteData.failed--;
-        const prevFailed = this.failedTestsData.find(f => f.id === test.id);
-        if (prevFailed && prevFailed.screenshot) {
-          prevScreenshot = prevFailed.screenshot;
-        }
-        this.failedTestsData = this.failedTestsData.filter(f => f.id !== test.id);
-      } else if (prevTest.status === 'skipped') {
-        this.stats.skipped--; suiteData.skipped--;
-      }
+      const prev = suiteData.tests[existingIndex];
+      if (prev.status === 'passed') { this.stats.passed--; suiteData.passed--; }
+      else if (prev.status === 'failed') { this.stats.failed--; suiteData.failed--; }
+      else if (prev.status === 'flaky') { this.stats.flaky--; suiteData.flaky--; }
       suiteData.tests.splice(existingIndex, 1);
+      this.failedTestsData = this.failedTestsData.filter(f => f.id !== test.id);
     }
 
     suiteData.tests.push({
       id: test.id,
       title: test.title,
-      status: result.status,
+      status: finalStatus,
       duration: `${(result.duration / 1000).toFixed(1)}s`,
       durationMs: result.duration,
       project: rawProjectName,
       projectLabel: projectLabel
     });
 
-    if (result.status === 'passed') {
+    if (finalStatus === 'passed') {
       this.stats.passed++;
       suiteData.passed++;
-    } else if (result.status === 'failed' || result.status === 'timedOut') {
+    } else if (finalStatus === 'flaky') {
+      this.stats.flaky++;
+      suiteData.flaky++;
+    } else if (finalStatus === 'failed') {
       this.stats.failed++;
       suiteData.failed++;
-      
+
+      // Screenshot extraction
       const screenshot = result.attachments.find(a => a.name === 'screenshot' || (a.contentType && a.contentType.includes('image')));
       let screenshotBase64 = '';
       if (screenshot && screenshot.path && fs.existsSync(screenshot.path)) {
         const ext = path.extname(screenshot.path).replace('.', '');
-        const b64 = fs.readFileSync(screenshot.path, 'base64');
-        screenshotBase64 = `data:image/${ext || 'png'};base64,${b64}`;
+        screenshotBase64 = `data:image/${ext || 'png'};base64,${fs.readFileSync(screenshot.path, 'base64')}`;
       } else if (screenshot && screenshot.body) {
         screenshotBase64 = `data:image/png;base64,${screenshot.body.toString('base64')}`;
       }
 
-      let errorMsg = 'Unknown error';
-      let stackTrace = '';
-      if (result.error) {
-        errorMsg = result.error.message || result.error.value || 'Error';
-        stackTrace = result.error.stack || '';
-      } else if (result.errors && result.errors.length > 0) {
-        errorMsg = result.errors.map(e => e.message).join('\n\n');
-        stackTrace = result.errors.map(e => e.stack).join('\n\n');
+      // Clean error & stack trace
+      let rawError = result.error?.message || result.error?.value || 'Test failed without error description';
+      if (result.errors && result.errors.length > 0) {
+        rawError = result.errors.map(e => e.message).join('\n\n');
       }
+      const cleanError = stripAnsi(rawError);
+      const cleanStack = stripAnsi(result.error?.stack || result.errors?.map(e => e.stack).join('\n\n') || '');
+
+      // Extract failed step
+      const findFailedStep = (steps: any[]): string => {
+        for (const s of steps) {
+          if (s.error) return s.title;
+          if (s.steps && s.steps.length > 0) {
+            const nested = findFailedStep(s.steps);
+            if (nested) return nested;
+          }
+        }
+        return 'Execution / Timeout';
+      };
+      const failedStep = findFailedStep(result.steps || []);
+
+      // Extract Expected / Actual
+      let expected = 'N/A';
+      let actual = 'N/A';
+      const expMatch = cleanError.match(/Expected:\s*([\s\S]*?)(?=\n\s*Received:|\n\s*Actual:|$)/i);
+      const actMatch = cleanError.match(/(?:Received|Actual):\s*([\s\S]*?)(?=\n\s*Call log:|\n\s*at |$)/i);
+      if (expMatch) expected = expMatch[1].trim();
+      if (actMatch) actual = actMatch[1].trim();
+
+      // Extract trace attachment
+      const traceAttachment = result.attachments.find(a => a.name === 'trace' || (a.path && a.path.endsWith('.zip')));
+      let traceCommand = 'N/A';
+      if (traceAttachment && traceAttachment.path) {
+        const relTracePath = path.relative(process.cwd(), traceAttachment.path);
+        traceCommand = `npx playwright show-trace ${relTracePath}`;
+      }
+
+      // Extract Developer-Friendly Summary
+      let developerSummary = cleanError;
+      const defectMatch = cleanError.match(/DEFECT:\s*([^\n]+)/i);
+      if (defectMatch) {
+        developerSummary = `DEFECT: ${defectMatch[1].trim()}`;
+      } else {
+        const firstLine = cleanError.split('\n')[0].trim();
+        developerSummary = firstLine || 'Test assertion expectation failed';
+      }
+
+      // Format Jira Markdown ticket body
+      const relFilePath = path.relative(process.cwd(), test.location.file);
+      const jiraMarkdown = `h2. Bug Report: ${test.title}
+
+*Test Specification:* ${suiteName}
+*Test File:* ${relFilePath}:${test.location.line}
+*Environment:* ${projectLabel} (${process.platform}, Node ${process.version})
+*Execution Time:* ${(result.duration / 1000).toFixed(1)}s
+
+h3. Failed Step
+${failedStep}
+
+h3. Developer Failure Summary
+${developerSummary}
+
+h3. Expected vs Actual Result
+* *Expected Result:* ${expected}
+* *Actual Result:* ${actual}
+
+h3. Error Details
+{code}
+${cleanError.substring(0, 1200)}
+{code}
+
+h3. Interactive Trace Command
+{code:bash}
+${traceCommand}
+{code}`;
 
       this.failedTestsData.push({
         id: test.id,
         name: test.title,
-        file: `${test.location.file}:${test.location.line}`,
+        file: `${relFilePath}:${test.location.line}`,
         status: 'failed',
         duration: `${(result.duration / 1000).toFixed(1)}s`,
-        error: errorMsg,
-        stackTrace: stackTrace,
-        screenshot: screenshotBase64 || prevScreenshot,
+        failedStep,
+        developerSummary,
+        expected,
+        actual,
+        error: cleanError,
+        stackTrace: cleanStack,
+        screenshot: screenshotBase64,
+        traceCommand,
+        jiraMarkdown,
         project: rawProjectName,
         projectLabel: projectLabel
       });
-
-    } else if (result.status === 'skipped') {
-      this.stats.skipped++;
-      suiteData.skipped++;
     }
   }
 
   async onEnd(result: FullResult) {
     const totalDurationMs = Date.now() - this.stats.startTime;
     const totalDurationStr = `${Math.floor(totalDurationMs / 60000)}m ${Math.floor((totalDurationMs % 60000) / 1000)}s`;
-    const total = this.stats.passed + this.stats.failed + this.stats.skipped;
+    const total = this.stats.passed + this.stats.failed + this.stats.flaky;
     const passRate = total > 0 ? Math.round((this.stats.passed / total) * 100) : 0;
 
     const absOutputDir = path.resolve(this.outputDir);
@@ -435,9 +256,7 @@ class CustomDashboardReporter implements Reporter {
     const historyFile = path.join(absOutputDir, 'run-history.json');
     let history: number[] = [];
     if (fs.existsSync(historyFile)) {
-      try {
-        history = JSON.parse(fs.readFileSync(historyFile, 'utf-8'));
-      } catch (e) { }
+      try { history = JSON.parse(fs.readFileSync(historyFile, 'utf-8')); } catch (e) { }
     }
     history.push(passRate);
     if (history.length > 10) history = history.slice(history.length - 10);
@@ -447,7 +266,7 @@ class CustomDashboardReporter implements Reporter {
       summary: {
         passed: this.stats.passed,
         failed: this.stats.failed,
-        skipped: this.stats.skipped,
+        flaky: this.stats.flaky,
         totalDuration: totalDurationStr,
         passRate: `${passRate}%`
       },
@@ -468,8 +287,9 @@ class CustomDashboardReporter implements Reporter {
 
     const templatePath = path.join(__dirname, 'reporter-template.html');
     let htmlContent = fs.readFileSync(templatePath, 'utf-8');
-    
-    const dataScript = `<script id="report-data">window.__REPORT_DATA__ = ${JSON.stringify(reportData)};</script>`;
+
+    const safeJson = JSON.stringify(reportData).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+    const dataScript = `<script id="report-data">window.__REPORT_DATA__ = ${safeJson};</script>`;
     if (htmlContent.includes('<script id="report-data">')) {
       htmlContent = htmlContent.replace(/<script id="report-data">[\s\S]*?<\/script>/, dataScript);
     } else {
@@ -480,64 +300,34 @@ class CustomDashboardReporter implements Reporter {
     fs.writeFileSync(outPath, htmlContent);
     console.log(`Custom Dashboard Report generated at: ${outPath}`);
 
-    // Automatically trigger PDF export after writing the HTML report
     await this.generatePdf(outPath, path.join(absOutputDir, 'test-report.pdf'));
   }
 
   private async generatePdf(reportPath: string, finalPdfPath: string) {
-    console.log('Generating PDF test report...');
     let browser;
     try {
       browser = await chromium.launch({ headless: true });
-      const page = await browser.newPage({
-        viewport: { width: 1440, height: 900 }
-      });
+      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
       await page.goto(`file://${reportPath}`, { waitUntil: 'networkidle' });
       await page.emulateMedia({ media: 'screen' });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(800);
 
-      const tabButtons = page.locator(
-        '.tabs button, .browser-tabs button, [role="tab"], button:has-text("Setup"), button:has-text("Chrome"), button:has-text("Firefox"), button:has-text("WebKit")'
-      );
+      const tabButtons = page.locator('.browser-tabs button, [role="tab"]');
       const tabCount = await tabButtons.count();
-
       const mergedPdf = await PDFDocument.create();
 
-      const expandSuitesAndCapture = async (): Promise<Buffer> => {
-        // Expand suites and unhide all test details
+      const capture = async (): Promise<Buffer> => {
         await page.evaluate(() => {
-          const allElements = Array.from(document.querySelectorAll('*'));
-          allElements.forEach(el => {
-            const text = el.textContent || '';
-            const isSuiteBar = (text.includes('.spec.ts') || text.includes('.setup.ts')) && el.children.length > 0 && el.children.length <= 5;
-            if (isSuiteBar) {
-              (el as HTMLElement).click();
-            }
-          });
-
-          // Unhide all inner test containers directly
-          document.querySelectorAll('div, ul, li, section').forEach(el => {
-            const htmlEl = el as HTMLElement;
-            if (htmlEl.style.display === 'none' && !htmlEl.classList.contains('modal')) {
-              htmlEl.style.display = 'block';
-            }
+          document.querySelectorAll('.suite-tests').forEach(el => (el as HTMLElement).style.display = 'block');
+          document.querySelectorAll('.error-screenshot img').forEach(img => {
+            (img as HTMLElement).style.display = 'block';
+            (img as HTMLElement).style.maxHeight = '420px';
           });
         });
 
-        await page.waitForTimeout(600);
-
-        const fullHeight = await page.evaluate(() => {
-          const body = document.body;
-          const html = document.documentElement;
-          return Math.max(
-            body.scrollHeight,
-            body.offsetHeight,
-            html.clientHeight,
-            html.scrollHeight,
-            html.offsetHeight
-          );
-        });
+        await page.waitForTimeout(500);
+        const fullHeight = await page.evaluate(() => Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
 
         return await page.pdf({
           width: '1440px',
@@ -549,31 +339,24 @@ class CustomDashboardReporter implements Reporter {
       };
 
       if (tabCount === 0) {
-        const pdfBuffer = await expandSuitesAndCapture();
+        const pdfBuffer = await capture();
         fs.writeFileSync(finalPdfPath, pdfBuffer);
       } else {
         for (let i = 0; i < tabCount; i++) {
-          const tab = tabButtons.nth(i);
-          await tab.click();
-          await page.waitForTimeout(600);
-
-          const tabPdfBuffer = await expandSuitesAndCapture();
-          const tempDoc = await PDFDocument.load(tabPdfBuffer);
-          const copiedPages = await mergedPdf.copyPages(tempDoc, tempDoc.getPageIndices());
-          copiedPages.forEach((p) => mergedPdf.addPage(p));
+          await tabButtons.nth(i).click();
+          await page.waitForTimeout(500);
+          const buf = await capture();
+          const doc = await PDFDocument.load(buf);
+          const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+          pages.forEach(p => mergedPdf.addPage(p));
         }
-
-        const mergedPdfBytes = await mergedPdf.save();
-        fs.writeFileSync(finalPdfPath, mergedPdfBytes);
+        fs.writeFileSync(finalPdfPath, await mergedPdf.save());
       }
-
       console.log(`PDF test report generated successfully: ${finalPdfPath}`);
-    } catch (error) {
-      console.error('Failed to generate PDF report automatically:', error);
+    } catch (e) {
+      console.error('PDF export failed:', e);
     } finally {
-      if (browser) {
-        await browser.close();
-      }
+      if (browser) await browser.close();
     }
   }
 }

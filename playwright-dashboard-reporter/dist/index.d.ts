@@ -16,5 +16,6 @@ declare class CustomDashboardReporter implements Reporter {
     onBegin(config: FullConfig, suite: Suite): void;
     onTestEnd(test: TestCase, result: TestResult): void;
     onEnd(result: FullResult): Promise<void>;
+    private generatePdf;
 }
 export default CustomDashboardReporter;
