@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { ProductPage } from '../src/pages/ProductPage';
 import { testProducts, searchTerms, testConfig } from '../src/data/testData';
+import { CustomAssertions } from '../src/utils/CustomAssertions';
 
 test.describe('Demo Web Shop - Product Suite', () => {
   let productPage: ProductPage;
@@ -69,5 +70,40 @@ test.describe('Demo Web Shop - Product Suite', () => {
     const details = await productPage.getProductDetails();
     expect(details.title).toBe(testProducts.book);
     expect(details.price).toBe(testProducts.bookPrice);
+  });
+
+  test('TC-16: Email a Friend Validation for Invalid Friend Email Formats (Negative)', async ({ page }) => {
+    // 1. Open product details page
+    await productPage.searchProduct(testProducts.book);
+    await productPage.clickProductByName(testProducts.book);
+
+    // 2. Attempt emailing a friend with invalid email formats
+    await productPage.emailAFriend('user@domain..com', 'myemail@example.com', 'Check this out!');
+
+    // Assert validation error is shown
+    await expect(productPage.emailFriendErrorMsg).toBeVisible();
+    await expect(productPage.emailFriendErrorMsg).toContainText('Wrong email');
+  });
+
+  test('TC-17: Search Field Security & Handling for Special Characters and XSS Strings (Security / Edge Case)', async ({ page }) => {
+    // 1. Search special characters / quotes
+    await productPage.searchProduct(`%'"`);
+    await expect(page).toHaveURL(/.*\/search.*/);
+    await expect(productPage.noResultsMessage).toContainText('No products were found that matched your criteria.');
+
+    // 2. Search script tag payload - REQUIREMENT: Application must handle input safely on search page (200 OK) without crashing/redirecting to /errorpage.htm
+    await productPage.searchInput.fill('<script>alert(1)</script>');
+    await productPage.searchButton.click();
+
+    const currentUrl = page.url();
+    const isErrorPage = currentUrl.includes('errorpage.htm');
+
+    CustomAssertions.assertBusinessRule(!isErrorPage, {
+      bugTitle: 'Unhandled Exception Crash Screen on Search XSS Payload',
+      module: 'Search / Catalog Module',
+      severity: 'High',
+      expectedResult: 'Submitting script tags (<script>alert(1)</script>) in search input must be handled gracefully, returning HTTP 200 with "No products found" page.',
+      actualResult:   `Application threw an unhandled server exception and navigated to: ${currentUrl}`
+    });
   });
 });

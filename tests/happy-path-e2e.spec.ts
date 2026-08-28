@@ -1,4 +1,3 @@
-
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../src/pages/LoginPage';
 import { ProductPage } from '../src/pages/ProductPage';
@@ -6,6 +5,7 @@ import { CartPage } from '../src/pages/CartPage';
 import { CheckoutPage } from '../src/pages/CheckoutPage';
 import { OrderDetailsPage } from '../src/pages/OrderDetailsPage';
 import { generateDynamicUser, defaultBillingAddress, testProducts, testConfig } from '../src/data/testData';
+import { CustomAssertions } from '../src/utils/CustomAssertions';
 
 test.describe('Demo Web Shop - E2E Happy Path', () => {
   test('Register, Add Product to Wishlist, Move to Cart, Checkout & Download PDF Invoice', async ({ page }) => {
@@ -105,5 +105,54 @@ test.describe('Demo Web Shop - E2E Happy Path', () => {
 
     // Final pause in headed mode to let the user view the finished state
     await visualDelay(4000);
+  });
+
+  test('TC-18: Fast Double-Click Handling on Accordion Checkout Step (Edge Case / Race Condition)', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const productPage = new ProductPage(page);
+    const cartPage = new CartPage(page);
+    const checkoutPage = new CheckoutPage(page);
+
+    const testUser = generateDynamicUser();
+
+    // 1. Register a fresh user for deterministic accordion checkout state
+    await loginPage.navigate(testConfig.baseUrl);
+    await loginPage.registerLink.click();
+    await loginPage.registerUser(testUser);
+    await expect(loginPage.registrationResultMsg).toBeVisible();
+
+    // 2. Add product to cart
+    await productPage.searchProduct(testProducts.book);
+    await productPage.clickProductByName(testProducts.book);
+    await productPage.addCurrentProductToCart();
+
+    // 3. Open cart and proceed to checkout
+    await cartPage.shoppingCartLink.click();
+    await expect(page).toHaveURL(/.*\/cart/);
+    await cartPage.acceptTermsAndCheckout();
+    await expect(page).toHaveURL(/.*\/onepagecheckout/);
+
+    // 4. Complete Step 1: Billing Address
+    await checkoutPage.completeBillingSection(defaultBillingAddress);
+    await page.waitForTimeout(500);
+
+    // 5. Complete Step 2: Shipping Address
+    await checkoutPage.completeShippingSection();
+    await page.waitForTimeout(500);
+
+    // 6. Step 3: Rapidly double click the Shipping Method Continue button
+    await checkoutPage.shippingMethodContinueBtn.waitFor({ state: 'visible', timeout: 10000 });
+    
+    const clickPromise = checkoutPage.shippingMethodContinueBtn.click({ clickCount: 2, delay: 30 });
+    const isDisabled = await checkoutPage.shippingMethodContinueBtn.isDisabled().catch(() => false);
+    await clickPromise.catch(() => {});
+
+    CustomAssertions.assertBusinessRule(isDisabled, {
+      bugTitle: 'Accordion Checkout Button Enables Duplicate AJAX Postbacks',
+      module: 'Checkout Module',
+      severity: 'Medium',
+      expectedResult: 'Accordion checkout "Continue" button must enter a disabled state immediately upon first click.',
+      actualResult:   'Button remained active and enabled during active AJAX postbacks, allowing multiple rapid click events.'
+    });
   });
 });
