@@ -60,9 +60,20 @@ export class CheckoutPage extends BasePage {
     this.confirmOrderBtn = page.locator('#confirm-order-buttons-container input[value="Confirm"]');
   }
 
-  async completeBillingSection(addressInfo: { countryId: string; city: string; address1: string; zipCode: string; phoneNumber: string }) {
-    if (await this.billingSelect.isVisible()) {
-      await this.billingSelect.selectOption({ value: '' }); // Selects "New Address" option which has empty value
+  async completeBillingSection(addressInfo: { firstName?: string; lastName?: string; email?: string; countryId: string; city: string; address1: string; zipCode: string; phoneNumber: string }) {
+    if (await this.billingSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
+      const selectedVal = await this.billingSelect.inputValue().catch(() => '');
+      if (selectedVal && selectedVal !== '') {
+        // An existing saved address is already selected, proceed directly
+        await this.billingContinueBtn.click();
+        return;
+      }
+    }
+    const emailInput = this.page.locator('#BillingNewAddress_Email');
+    if (await emailInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await this.page.locator('#BillingNewAddress_FirstName').fill(addressInfo.firstName || 'Test');
+      await this.page.locator('#BillingNewAddress_LastName').fill(addressInfo.lastName || 'User');
+      await emailInput.fill(addressInfo.email || 'testuser@example.com');
     }
     await this.billingCountrySelect.selectOption(addressInfo.countryId);
     await this.billingCityInput.fill(addressInfo.city);

@@ -11,6 +11,13 @@ export class ProductPage extends BasePage {
   public readonly categoryHeader: Locator;
   public readonly noResultsMessage: Locator;
 
+  public readonly emailAFriendBtn: Locator;
+  public readonly friendEmailInput: Locator;
+  public readonly yourEmailInput: Locator;
+  public readonly personalMessageInput: Locator;
+  public readonly sendEmailBtn: Locator;
+  public readonly emailFriendErrorMsg: Locator;
+
   constructor(page: Page) {
     super(page);
 
@@ -23,6 +30,22 @@ export class ProductPage extends BasePage {
     this.successNotificationBar = page.locator('#bar-notification');
     this.categoryHeader = page.locator('.page-title h1');
     this.noResultsMessage = page.locator('.search-results .result');
+
+    this.emailAFriendBtn = page.locator('input[value="Email a friend"]');
+    this.friendEmailInput = page.locator('#FriendEmail');
+    this.yourEmailInput = page.locator('#YourEmailAddress');
+    this.personalMessageInput = page.locator('#PersonalMessage');
+    this.sendEmailBtn = page.locator('input[name="send-email"]');
+    this.emailFriendErrorMsg = page.locator('span.field-validation-error').first();
+  }
+
+  async emailAFriend(friendEmail: string, yourEmail: string, message: string = 'Check this out') {
+    await this.emailAFriendBtn.click();
+    await this.friendEmailInput.waitFor({ state: 'visible' });
+    await this.friendEmailInput.fill(friendEmail);
+    await this.yourEmailInput.fill(yourEmail);
+    await this.personalMessageInput.fill(message);
+    await this.sendEmailBtn.click();
   }
 
   async selectCategory(categoryName: string) {

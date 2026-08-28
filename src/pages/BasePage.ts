@@ -18,7 +18,7 @@ export class BasePage {
     this.shoppingCartLink = page.locator('#topcartlink a.ico-cart');
     this.wishlistLink = page.locator('.header-links a.ico-wishlist');
     this.searchInput = page.locator('#small-searchterms');
-    this.searchButton = page.locator('input[value="Search"]');
+    this.searchButton = page.locator('.search-box-button').first();
   }
 
   async navigate(path: string = '/') {
