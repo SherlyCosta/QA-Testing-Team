@@ -59,16 +59,14 @@ pipeline {
                 }
             }
         }
-
-        stage('Generate PDF Report') {
-            steps {
-                bat 'npx tsx scripts/generate-pdf.ts'
-            }
-        }
         
     }
    post {
     always {
+
+        //generate the pdf report regardless tests pass/fail.
+        bat 'npx tsx scripts/generate-pdf.ts'
+
         archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**, playwright-custom-report/test-report.pdf', allowEmptyArchive: true
 
         publishHTML([
