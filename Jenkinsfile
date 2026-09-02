@@ -1,7 +1,17 @@
 pipeline {
     agent any
 
-    parameters{
+    parameters {
+        choice(
+            name: 'TEST_SUITE',
+            choices: ['All', 'Auth', 'Product', 'Cart', 'Happy_Path_E2E'],
+            description: 'Select the Playwright test suite to execute.'
+        )
+        choice(
+            name: 'BROWSER',
+            choices: ['All', 'Chromium', 'Firefox', 'WebKit'],
+            description: 'Select the browser in which to execute the Playwright tests.'
+        )
         string(
             name: 'BRANCH',
             defaultValue: 'main',
@@ -12,14 +22,18 @@ pipeline {
             choices: ['staging', 'dev', 'production'],
             description: 'Target environment URL.'
         )
-
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                // Uses the BRANCH parameter instead of default scm checkout
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH}"]],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                ])
             }
         }
 
@@ -35,7 +49,7 @@ pipeline {
             }
         }
 
-         stage('Run Tests') {
+        stage('Run Tests') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -60,14 +74,15 @@ pipeline {
                             testCommand = 'npm run test tests/happy-path-e2e.spec.ts'
                         }
 
+                        // Injects TARGET_ENV so Playwright receives the selected ENVIRONMENT parameter
                         if (params.BROWSER == 'All') {
-                            bat testCommand
+                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand}"
                         } else if (params.BROWSER == 'Chromium') {
-                            bat "${testCommand} --project=chromium"
+                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=chromium"
                         } else if (params.BROWSER == 'Firefox') {
-                            bat "${testCommand} --project=firefox"
+                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=firefox"
                         } else if (params.BROWSER == 'WebKit') {
-                            bat "${testCommand} --project=webkit"
+                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=webkit"
                         }
                     }
                 }
@@ -75,31 +90,31 @@ pipeline {
         }
         
     }
-   post {
-    always {
+    post {
+        always {
 
-        //generate the pdf report regardless tests pass/fail.
-        bat 'npx tsx scripts/generate-pdf.ts'
+            //generate the pdf report regardless tests pass/fail.
+            bat 'npx tsx scripts/generate-pdf.ts'
 
-        archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**, playwright-custom-report/test-report.pdf', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**, playwright-custom-report/test-report.pdf', allowEmptyArchive: true
 
-        publishHTML([
-            allowMissing: true,
-            alwaysLinkToLastBuild: true,
-            keepAll: true,
-            reportDir: 'playwright-report',
-            reportFiles: 'index.html',
-            reportName: 'Playwright HTML Report'
-        ])
+            publishHTML([
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright HTML Report'
+            ])
 
-        publishHTML([
-            allowMissing: true,
-            alwaysLinkToLastBuild: true,
-            keepAll: true,
-            reportDir: 'playwright-custom-report',
-            reportFiles: 'dashboard.html',
-            reportName: 'Custom Dashboard Report'
-        ])
+            publishHTML([
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'playwright-custom-report',
+                reportFiles: 'dashboard.html',
+                reportName: 'Custom Dashboard Report'
+            ])
+        }
     }
-  }
 }
