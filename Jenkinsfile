@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        // Points Jenkins to your Windows Node.js installation
+        PATH = "C:\Program Files\nodejs\node.exe;${env.PATH}"
+    }
+
     parameters {
         choice(
             name: 'TEST_SUITE',
