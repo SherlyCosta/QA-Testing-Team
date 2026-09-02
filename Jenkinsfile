@@ -1,6 +1,20 @@
 pipeline {
     agent any
 
+    parameters{
+        string(
+            name: 'BRANCH',
+            defaultValue: 'main',
+            description: 'Branch to execute tests against.'
+        )
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['staging', 'dev', 'production'],
+            description: 'Target environment URL.'
+        )
+
+    }
+
     stages {
 
         stage('Checkout') {
