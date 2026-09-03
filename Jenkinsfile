@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Points Jenkins to your Windows Node.js installation
-        PATH = "C:\Program Files\nodejs\node.exe;${env.PATH}"
+        PATH = "C:\\Program Files\\nodejs;${env.PATH}"
     }
 
     parameters {
@@ -17,10 +17,12 @@ pipeline {
             choices: ['All', 'Chromium', 'Firefox', 'WebKit'],
             description: 'Select the browser in which to execute the Playwright tests.'
         )
-        string(
+        gitParameter(
             name: 'BRANCH',
+            type: 'PT_BRANCH',
             defaultValue: 'main',
-            description: 'Branch to execute tests against.'
+            description: 'Select branch to execute tests against.',
+            sortMode: 'ASCENDING_SMART'
         )
         choice(
             name: 'ENVIRONMENT',
@@ -33,10 +35,9 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Uses the BRANCH parameter instead of default scm checkout
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/${params.BRANCH}"]],
+                    branches: [[name: "${params.BRANCH}"]],
                     userRemoteConfigs: scm.userRemoteConfigs
                 ])
             }
