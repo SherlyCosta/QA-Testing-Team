@@ -82,7 +82,7 @@ pipeline {
 
                         // Injects TARGET_ENV so Playwright receives the selected ENVIRONMENT parameter
                         if (params.BROWSER == 'All') {
-                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand}"
+                            bat "set TARGET_ENV=${params.ENVIRONMENT}&& ${testCommand}"
                         } else if (params.BROWSER == 'Chromium') {
                             bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=chromium"
                         } else if (params.BROWSER == 'Firefox') {

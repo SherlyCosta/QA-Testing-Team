@@ -6,7 +6,8 @@ import path from 'path';
  * Read environment variables dynamically based on Jenkins TARGET_ENV parameter.
  * Defaults to 'staging' if running locally without the parameter.
  */
-const environment = process.env.TARGET_ENV || 'staging';
+const rawEnv = process.env.TARGET_ENV || 'staging';
+const environment = rawEnv.trim();
 
 dotenv.config({
   path: path.resolve(__dirname, `.env.${environment}`)
