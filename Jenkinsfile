@@ -64,31 +64,44 @@ pipeline {
                         passwordVariable: 'TEST_USER_PASSWORD'
                     )
                 ]) {
-                    script {
+                    withEnv([
+                        "TEST_SUITE=${params.TEST_SUITE}",
+                        "BROWSER=${params.BROWSER}",
+                        "BRANCH=${params.BRANCH}",
+                        "ENVIRONMENT=${params.ENVIRONMENT}",
+                        "TARGET_ENV=${params.ENVIRONMENT}",
+                        "BUILD_NUMBER=${env.BUILD_NUMBER ?: ''}",
+                        "JOB_NAME=${env.JOB_NAME ?: ''}",
+                        "BUILD_URL=${env.BUILD_URL ?: ''}"
+                    ]) {
+                        script {
 
-                        def testCommand
+                            def testCommand
 
-                        if (params.TEST_SUITE == 'All') {
-                            testCommand = 'npx playwright test'
-                        } else if (params.TEST_SUITE == 'Auth') {
-                            testCommand = 'npm run test:auth'
-                        } else if (params.TEST_SUITE == 'Product') {
-                            testCommand = 'npm run test:product'
-                        } else if (params.TEST_SUITE == 'Cart') {
-                            testCommand = 'npm run test:cart'
-                        } else if (params.TEST_SUITE == 'Happy_Path_E2E') {
-                            testCommand = 'npm run test tests/happy-path-e2e.spec.ts'
-                        }
+                            if (params.TEST_SUITE == 'All') {
+                                testCommand = 'npx playwright test'
+                            } else if (params.TEST_SUITE == 'Auth') {
+                                testCommand = 'npm run test:auth'
+                            } else if (params.TEST_SUITE == 'Product') {
+                                testCommand = 'npm run test:product'
+                            } else if (params.TEST_SUITE == 'Cart') {
+                                testCommand = 'npm run test:cart'
+                            } else if (params.TEST_SUITE == 'Happy_Path_E2E') {
+                                testCommand = 'npm run test tests/happy-path-e2e.spec.ts'
+                            }
 
-                        // Injects TARGET_ENV so Playwright receives the selected ENVIRONMENT parameter
-                        if (params.BROWSER == 'All') {
-                            bat "set TARGET_ENV=${params.ENVIRONMENT}&& ${testCommand}"
-                        } else if (params.BROWSER == 'Chromium') {
-                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=chromium"
-                        } else if (params.BROWSER == 'Firefox') {
-                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=firefox"
-                        } else if (params.BROWSER == 'WebKit') {
-                            bat "set TARGET_ENV=${params.ENVIRONMENT} && ${testCommand} --project=webkit"
+                            // Injects build parameters so Playwright and reports reflect exact Jenkins parameters
+                            def envPrefix = "set TEST_SUITE=${params.TEST_SUITE}&& set BROWSER=${params.BROWSER}&& set BRANCH=${params.BRANCH}&& set ENVIRONMENT=${params.ENVIRONMENT}&& set TARGET_ENV=${params.ENVIRONMENT}&& set BUILD_NUMBER=${env.BUILD_NUMBER ?: ''}&& "
+
+                            if (params.BROWSER == 'All') {
+                                bat "${envPrefix}${testCommand}"
+                            } else if (params.BROWSER == 'Chromium') {
+                                bat "${envPrefix}${testCommand} --project=chromium"
+                            } else if (params.BROWSER == 'Firefox') {
+                                bat "${envPrefix}${testCommand} --project=firefox"
+                            } else if (params.BROWSER == 'WebKit') {
+                                bat "${envPrefix}${testCommand} --project=webkit"
+                            }
                         }
                     }
                 }
@@ -100,7 +113,7 @@ pipeline {
         always {
 
             //generate the pdf report regardless tests pass/fail.
-            bat 'npx tsx scripts/generate-pdf.ts'
+            bat "set TEST_SUITE=${params.TEST_SUITE}&& set BROWSER=${params.BROWSER}&& set BRANCH=${params.BRANCH}&& set ENVIRONMENT=${params.ENVIRONMENT}&& set TARGET_ENV=${params.ENVIRONMENT}&& set BUILD_NUMBER=${env.BUILD_NUMBER ?: ''}&& npx tsx scripts/generate-pdf.ts"
 
             archiveArtifacts artifacts: 'playwright-report/**, playwright-custom-report/**, playwright-custom-report/test-report.pdf', allowEmptyArchive: true
 
