@@ -262,6 +262,42 @@ ${traceCommand}
     if (history.length > 10) history = history.slice(history.length - 10);
     fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
 
+    // Extract Git branch if not provided by Jenkins BRANCH env var
+    let branch = (process.env.BRANCH || process.env.GIT_BRANCH || '').trim();
+    if (!branch) {
+      try {
+        const { execSync } = require('child_process');
+        branch = execSync('git rev-parse --abbrev-ref HEAD', { stdio: ['pipe', 'pipe', 'ignore'] }).toString().trim();
+      } catch (e) {
+        branch = 'main';
+      }
+    }
+
+    // Determine OS friendly display
+    let osLabel = process.platform as string;
+    if (process.platform === 'win32') osLabel = 'Windows';
+    else if (process.platform === 'darwin') osLabel = 'macOS';
+    else if (process.platform === 'linux') osLabel = 'Linux';
+
+    const testSuite = (process.env.TEST_SUITE || 'All').trim();
+    const browserParam = (process.env.BROWSER || 'All').trim();
+    const targetEnv = (process.env.TARGET_ENV || process.env.ENVIRONMENT || 'staging').trim();
+    const baseUrl = (process.env.BASE_URL || '').trim();
+    const buildNumber = process.env.BUILD_NUMBER ? `#${process.env.BUILD_NUMBER}` : 'Local Run';
+    const jobName = process.env.JOB_NAME || '';
+    const buildUrl = process.env.BUILD_URL || '';
+
+    const parameters = {
+      testSuite,
+      browser: browserParam,
+      branch: branch || 'main',
+      environment: targetEnv,
+      baseUrl: baseUrl || 'N/A',
+      buildNumber,
+      jobName,
+      buildUrl
+    };
+
     const reportData = {
       summary: {
         passed: this.stats.passed,
@@ -270,16 +306,22 @@ ${traceCommand}
         totalDuration: totalDurationStr,
         passRate: `${passRate}%`
       },
+      parameters,
       projects: Array.from(this.executedProjects.values()),
       browserConfigs: Object.fromEntries(this.browserConfigs.entries()),
       trend: history,
       suites: Array.from(this.suitesMap.values()),
       failedTests: this.failedTestsData,
       environment: {
-        os: process.platform,
+        testSuite,
+        environment: targetEnv.toUpperCase(),
+        baseUrl: baseUrl || 'N/A',
+        branch: branch || 'main',
+        browser: browserParam,
+        buildNumber,
+        os: osLabel,
         node: process.version,
         playwright: require('@playwright/test/package.json').version || 'Unknown',
-        project: this.projectName
       },
       browser: this.browserInfo,
       logs: []

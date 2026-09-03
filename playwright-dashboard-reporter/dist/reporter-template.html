@@ -235,6 +235,128 @@
             box-shadow: 0 0 0 1px var(--highlight);
         }
 
+        /* Build Parameters Bar */
+        .build-params-bar {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
+        }
+
+        .param-badge-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .param-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 4px;
+        }
+
+        .param-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--subrow-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+        }
+
+        .param-pill-label {
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .param-pill-value {
+            color: var(--text-main);
+            font-weight: 600;
+            font-family: var(--mono-font);
+        }
+
+        .env-badge-dev {
+            background: rgba(163, 113, 247, 0.15);
+            color: #a371f7;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(163, 113, 247, 0.3);
+            font-weight: 600;
+            font-family: var(--mono-font);
+            font-size: 0.82rem;
+            display: inline-block;
+        }
+
+        .env-badge-staging {
+            background: rgba(47, 129, 247, 0.15);
+            color: #58a6ff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(47, 129, 247, 0.3);
+            font-weight: 600;
+            font-family: var(--mono-font);
+            font-size: 0.82rem;
+            display: inline-block;
+        }
+
+        .env-badge-production, .env-badge-prod {
+            background: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(218, 54, 51, 0.3);
+            font-weight: 600;
+            font-family: var(--mono-font);
+            font-size: 0.82rem;
+            display: inline-block;
+        }
+
+        .highlight-badge {
+            background: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(35, 134, 54, 0.3);
+        }
+
+        .param-url-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .param-url-value {
+            color: var(--highlight);
+            text-decoration: none;
+            font-family: var(--mono-font);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .param-url-value:hover {
+            text-decoration: underline;
+        }
+
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -908,6 +1030,37 @@
             </div>
         </div>
 
+        <!-- Build Parameters Banner / Quick Badges -->
+        <div class="build-params-bar" id="build-params-bar">
+            <div class="param-badge-group">
+                <span class="param-title"><i class="fa-solid fa-sliders"></i> Parameters:</span>
+                <div class="param-pill">
+                    <span class="param-pill-label"><i class="fa-solid fa-layer-group"></i> Suite:</span>
+                    <span class="param-pill-value" id="param-suite-val">All</span>
+                </div>
+                <div class="param-pill">
+                    <span class="param-pill-label"><i class="fa-solid fa-server"></i> Env:</span>
+                    <span class="param-pill-value env-badge-staging" id="param-env-val">STAGING</span>
+                </div>
+                <div class="param-pill">
+                    <span class="param-pill-label"><i class="fa-solid fa-code-branch"></i> Branch:</span>
+                    <span class="param-pill-value" id="param-branch-val">main</span>
+                </div>
+                <div class="param-pill">
+                    <span class="param-pill-label"><i class="fa-solid fa-globe"></i> Browser:</span>
+                    <span class="param-pill-value" id="param-browser-val">All</span>
+                </div>
+                <div class="param-pill" id="param-build-pill">
+                    <span class="param-pill-label"><i class="fa-solid fa-cube"></i> Build:</span>
+                    <span class="param-pill-value highlight-badge" id="param-build-val">Local Run</span>
+                </div>
+            </div>
+            <div class="param-url-group" id="param-url-group">
+                <span class="param-url-label"><i class="fa-solid fa-link"></i> Target URL:</span>
+                <a href="#" target="_blank" class="param-url-value" id="param-url-val">--</a>
+            </div>
+        </div>
+
         <!-- Browser Tabs Panel -->
         <div class="browser-tabs-panel" id="browser-tabs-panel">
             <span class="browser-tabs-label"><i class="fa-solid fa-globe"></i> Executed Browsers:</span>
@@ -1004,8 +1157,8 @@
 
         <div class="footer-grid">
             <div class="footer-card">
-                <div class="footer-card-header"><i class="fa-solid fa-gear"></i> Environment</div>
-                <div class="info-grid" id="env-info">
+                <div class="footer-card-header"><i class="fa-solid fa-sliders"></i> Environment & Parameters</div>
+                <div class="info-grid" id="env-info" style="grid-template-columns: 110px 1fr;">
                     <!-- Populated by JS -->
                 </div>
             </div>
@@ -1442,11 +1595,69 @@
             document.getElementById('report-time').innerHTML = `<i class="fa-regular fa-calendar"></i> ${timeStr}`;
             document.getElementById('bottom-time').textContent = `Report generated on ${timeStr}`;
 
+            const params = data.parameters || {
+                testSuite: data.environment?.testSuite || 'All',
+                browser: data.environment?.browser || 'All',
+                branch: data.environment?.branch || 'main',
+                environment: (data.environment?.environment || 'staging').toLowerCase(),
+                baseUrl: data.environment?.baseUrl || '',
+                buildNumber: data.environment?.buildNumber || 'Local Run'
+            };
+
+            const suiteVal = params.testSuite || 'All';
+            const envVal = (params.environment || 'staging').toLowerCase();
+            const branchVal = params.branch || 'main';
+            const browserVal = params.browser || 'All';
+            const buildVal = params.buildNumber || 'Local Run';
+            const baseUrlVal = params.baseUrl && params.baseUrl !== 'N/A' ? params.baseUrl : '';
+
+            // 1. Render Top Quick-Badges
+            const suiteEl = document.getElementById('param-suite-val');
+            if (suiteEl) suiteEl.textContent = suiteVal;
+
+            const envEl = document.getElementById('param-env-val');
+            if (envEl) {
+                envEl.textContent = envVal.toUpperCase();
+                envEl.className = `param-pill-value env-badge-${envVal}`;
+            }
+
+            const branchEl = document.getElementById('param-branch-val');
+            if (branchEl) branchEl.textContent = branchVal;
+
+            const browserEl = document.getElementById('param-browser-val');
+            if (browserEl) browserEl.textContent = browserVal;
+
+            const buildEl = document.getElementById('param-build-val');
+            if (buildEl) buildEl.textContent = buildVal;
+
+            const urlGroup = document.getElementById('param-url-group');
+            const urlEl = document.getElementById('param-url-val');
+            if (urlEl && urlGroup) {
+                if (baseUrlVal) {
+                    urlEl.textContent = baseUrlVal;
+                    urlEl.href = baseUrlVal;
+                    urlGroup.style.display = 'flex';
+                } else {
+                    urlGroup.style.display = 'none';
+                }
+            }
+
+            // 2. Render Upgraded Environment & Parameters Card
             const envGrid = document.getElementById('env-info');
-            envGrid.innerHTML = '';
-            Object.entries(data.environment || {}).forEach(([k, v]) => {
-                envGrid.innerHTML += `<div class="info-label">${k.toUpperCase()}</div><div class="info-value">${v}</div>`;
-            });
+            if (envGrid) {
+                const envBadgeClass = `env-badge-${envVal}`;
+                envGrid.innerHTML = `
+                    <div class="info-label">TEST SUITE</div><div class="info-value"><strong>${escapeHtml(suiteVal)}</strong></div>
+                    <div class="info-label">TARGET ENV</div><div class="info-value"><span class="${envBadgeClass}">${escapeHtml(envVal.toUpperCase())}</span></div>
+                    ${baseUrlVal ? `<div class="info-label">BASE URL</div><div class="info-value"><a href="${escapeHtml(baseUrlVal)}" target="_blank" style="color:var(--highlight); text-decoration:none;">${escapeHtml(baseUrlVal)}</a></div>` : ''}
+                    <div class="info-label">BRANCH</div><div class="info-value"><i class="fa-solid fa-code-branch" style="color:var(--text-muted)"></i> ${escapeHtml(branchVal)}</div>
+                    <div class="info-label">BROWSER</div><div class="info-value">${escapeHtml(browserVal)}</div>
+                    <div class="info-label">BUILD #</div><div class="info-value">${escapeHtml(buildVal)}</div>
+                    <div class="info-label">PLATFORM</div><div class="info-value">${escapeHtml(data.environment?.os || 'Unknown')}</div>
+                    <div class="info-label">NODE</div><div class="info-value">${escapeHtml(data.environment?.node || 'Unknown')}</div>
+                    <div class="info-label">PLAYWRIGHT</div><div class="info-value">${escapeHtml(data.environment?.playwright || 'Unknown')}</div>
+                `;
+            }
 
             const logsGrid = document.getElementById('logs-info');
             logsGrid.innerHTML = '';
