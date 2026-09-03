@@ -3,9 +3,19 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 /**
- * Read environment variables from .env file.
+ * Read environment variables dynamically based on Jenkins TARGET_ENV parameter.
+ * Defaults to 'staging' if running locally without the parameter.
  */
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+const environment = process.env.TARGET_ENV || 'staging';
+
+dotenv.config({
+  path: path.resolve(__dirname, `.env.${environment}`)
+});
+
+console.log(`\n==================================================`);
+console.log(`  TARGET ENVIRONMENT : [${environment.toUpperCase()}]`);
+console.log(`  BASE URL           : [${process.env.BASE_URL}]`);
+console.log(`==================================================\n`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -29,8 +39,8 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'https://demowebshop.tricentis.com/',
+    /* Base URL resolved dynamically from the corresponding .env file */
+    baseURL: process.env.BASE_URL,
 
     screenshot: 'only-on-failure',
 
