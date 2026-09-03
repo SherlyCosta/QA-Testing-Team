@@ -8,7 +8,10 @@
     "test:auth": "playwright test tests/auth",
     "test:product": "playwright test tests/product",
     "test:cart": "playwright test tests/cart",
-    "posttest": "npx tsx scripts/generate-pdf.ts"
+    "posttest": "npx tsx scripts/generate-pdf.ts",
+    "test:dev": "set TARGET_ENV=dev&& npx playwright test",
+    "test:staging": "set TARGET_ENV=staging&& npx playwright test",
+    "test:prod": "set TARGET_ENV=production&& npx playwright test"
   },
   "repository": {
     "type": "git",
