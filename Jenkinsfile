@@ -24,10 +24,10 @@ pipeline {
             description: 'Select branch to execute tests against.',
             sortMode: 'ASCENDING_SMART'
         )
-        choice(
+        string(
             name: 'ENVIRONMENT',
-            choices: ['staging', 'dev', 'production'],
-            description: 'Target environment URL.'
+            defaultValue: 'staging',
+            description: 'Target environment to execute tests against (e.g., staging, dev, production).'
         )
     }
 
